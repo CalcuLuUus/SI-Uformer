@@ -56,6 +56,18 @@ class Options():
         parser.add_argument('--warmup', action='store_true', default=False, help='warmup') 
         parser.add_argument('--warmup_epochs', type=int,default=3, help='epochs for warmup') 
 
+        # args for selective inversion (Uformer_SI)
+        parser.add_argument('--si_tau', type=float, default=0.1, help='threshold tau for sigma_eff mask')
+        parser.add_argument('--si_sigma_min', type=float, default=1e-4, help='sigma_eff lower bound')
+        parser.add_argument('--si_eps', type=float, default=1e-6, help='epsilon for pseudo-inverse')
+        parser.add_argument('--si_pad_factor', type=int, default=16, help='pad factor for square input')
+        parser.add_argument('--si_fft_norm', type=str, default='ortho', help='fft norm: ortho|backward|forward')
+        parser.add_argument('--si_use_y_as_cond', type=int, default=1, help='1: concat Y with x_ctx as condition')
+        parser.add_argument('--si_force_residual', type=int, default=1, help='1: force residual output for Uformer')
+        parser.add_argument('--si_h_mode', type=str, default='learned', help='H_hat mode: learned|known|identity')
+        parser.add_argument('--si_sigma_mode', type=str, default='learned', help='sigma_eff mode: learned|analytic|known')
+        parser.add_argument('--si_sigma_k', type=float, default=1.0, help='analytic sigma_eff scale k')
+
         # ddp
         parser.add_argument("--local_rank", type=int,default=-1,help='DDP parameter, do not modify')#不需要赋值，启动命令 torch.distributed.launch会自动赋值
         parser.add_argument("--distribute",action='store_true',help='whether using multi gpu train')

@@ -76,6 +76,35 @@ def get_arch(opt):
     elif arch == 'Uformer_B':
         model_restoration = Uformer(img_size=opt.train_ps,embed_dim=32,win_size=8,token_projection='linear',token_mlp='leff',
             depths=[1, 2, 8, 8, 2, 8, 8, 2, 1],modulator=True,dd_in=opt.dd_in)  
+    elif arch == 'Uformer_SI':
+        from selective_inversion import SelectiveInversionUformer, SIConfig
+        base_in_ch = opt.dd_in
+        use_y_as_cond = bool(getattr(opt, "si_use_y_as_cond", 1))
+        dd_in = base_in_ch * 2 if use_y_as_cond else base_in_ch
+        uformer_base = Uformer(
+            img_size=opt.train_ps,
+            embed_dim=opt.embed_dim,
+            win_size=opt.win_size,
+            token_projection=opt.token_projection,
+            token_mlp=opt.token_mlp,
+            depths=[1, 2, 8, 8, 2, 8, 8, 2, 1],
+            modulator=True,
+            dd_in=dd_in,
+            in_chans=base_in_ch,
+        )
+        cfg = SIConfig(
+            tau=getattr(opt, "si_tau", 0.1),
+            sigma_min=getattr(opt, "si_sigma_min", 1e-4),
+            eps=getattr(opt, "si_eps", 1e-6),
+            pad_factor=getattr(opt, "si_pad_factor", 16),
+            fft_norm=getattr(opt, "si_fft_norm", "ortho"),
+            use_y_as_cond=use_y_as_cond,
+            force_residual=bool(getattr(opt, "si_force_residual", 1)),
+            h_mode=getattr(opt, "si_h_mode", "learned"),
+            sigma_mode=getattr(opt, "si_sigma_mode", "learned"),
+            sigma_k=getattr(opt, "si_sigma_k", 1.0),
+        )
+        model_restoration = SelectiveInversionUformer(uformer_base, cfg)
     else:
         raise Exception("Arch error!")
 
